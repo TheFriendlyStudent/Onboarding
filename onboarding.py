@@ -1,8 +1,11 @@
+# DFR Onboarding Project
+
 from dash import Dash, dcc, html, Input, Output
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 
+#import the data and drop columns with only one unique value to clean up data
 data = pd.read_csv('can_data.csv', on_bad_lines='skip', na_values={"timestamp":np.float64, "Analog Input 1":np.float32,
                                               "Analog Input 2":np.float32, "Analog Input 3":np.float32, "Analog Input 4":np.float32,
                                               "Analog Input 5":np.float32, "Analog Input 6":np.float32, "Analog Input 7":np.float32,
@@ -37,10 +40,25 @@ app.layout = html.Div([
     Output("graph", "figure"),
     Input("dropdown", "value"))
 def display_color(color):
-    fig = go.Figure(
-        data=go.Bar(y=[2, 3, 1], # replace with your own data source
-                    marker_color=color))
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=data["timestamp"],
+        y=data["Analog Input 2"],
+        mode="lines",
+        name="Analog Input 2",
+        line=dict(color=color)
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=data["timestamp"],
+        y=data["Analog Input 1"],
+        mode="lines",
+        name="Analog Input 1"
+    ))
+
     return fig
+
 
 
 app.run(debug=True)
