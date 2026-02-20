@@ -52,14 +52,17 @@ app.layout = html.Div([
 #produce two graphs plotting two inputs over time
 #runtime code to update the graph based on dropdown selections
 @app.callback(
-    Output("graph", "figure"))
-def display_color():
+    Output("graph", "figure"),
+    Input("dropdown2", "value"),
+    Input("dropdown3", "value")
+)
+def display_color(show_accel, show_analog2):
 
     fig = make_subplots(
         rows=2,
         cols=1,
-        shared_xaxes=True,
-        subplot_titles=("Analog Input #2", "Acceleration")
+        shared_xaxes=False,
+        subplot_titles=("TPS vs Fuel Open Time", "Acceleration")
     )
 
     # Top chart
@@ -67,8 +70,9 @@ def display_color():
         go.Scatter(
             x=data["TPS"],
             y=data["Fuel Open Time"],
-            mode="lines",
-            name="Analog Input #2"
+            mode="markers",
+            marker=dict(size=5, color="blue"),
+            name="TPS vs Fuel Open Time"
         ),
         row=1,
         col=1
@@ -88,7 +92,7 @@ def display_color():
 
     fig.update_layout(
         height=700,
-        title="Acceleration vs Time",
+        title="Acceleration vs Time and TPS vs Fuel Open Time",
         showlegend=True
     )
 
