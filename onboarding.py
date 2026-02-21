@@ -18,13 +18,21 @@ for each in data.columns:
 data = data.dropna(how="any")
 data["timestamp"] = pd.to_datetime(data["timestamp"], unit="s")
 
-#smoothing the speed data for better readability 
-#calculating acceleration by taking derivative of speed over time
-speed_converted = data["Driven Avg Wheel Speed"] / 3.6
-speed_mps_smooth = speed_converted.rolling(25, center=True).mean()
+#Convert speed from km/h to m/s
+speed_mps = data["Driven Avg Wheel Speed"] / 3.6
 
-#adding the new values to the dataframe
-data["Accel"] = speed_mps_smooth.diff() / data["timestamp"].diff().dt.total_seconds()
+#Compute average timestep
+dt = data["timestamp"].diff().dt.total_seconds()
+dt_mean = dt.mean()
+
+#Smooth speed
+speed_smooth = speed_mps.rolling(window=25, center=True).mean()
+
+#Compute acceleration using centered numerical derivative
+accel_raw = np.gradient(speed_smooth, dt_mean)
+
+#Smooth acceleration for readability
+data["Accel"] = pd.Series(accel_raw).rolling(window=15, center=True).mean()
 
 #setting up the plotly graph and dash app to display data
 app = Dash(__name__)
@@ -78,6 +86,30 @@ def display_color(show_accel, show_analog2):
         col=1
     )
 
+    # Calculate linear regression
+    x = data["TPS"]
+    y = data["Fuel Open Time"]
+    
+    # Fit a 3rd-degree polynomial (cubic)
+    coeffs = np.polyfit(x, y, 3)       # 3 = cubic
+    trend_y = np.polyval(coeffs, x)    # evaluate the polynomial at each x
+
+    # Optional: sort x for a smooth line
+    sorted_idx = np.argsort(x)
+
+    # Add polynomial trendline
+    fig.add_trace(
+        go.Scatter(
+            x=x.values[sorted_idx],
+            y=trend_y[sorted_idx],
+            mode="lines",
+            line=dict(color="green", width=2),
+            name="Polynomial Trendline"   # updated label
+        ),
+        row=1,
+        col=1
+    )
+
     # Bottom chart
     fig.add_trace(
         go.Scatter(
@@ -95,6 +127,13 @@ def display_color(show_accel, show_analog2):
         title="Acceleration vs Time and TPS vs Fuel Open Time",
         showlegend=True
     )
+
+    # Axis labels
+    fig.update_xaxes(title_text="TPS (%)", row=1, col=1)
+    fig.update_yaxes(title_text="Fuel Open Time (ms)", row=1, col=1)
+
+    fig.update_xaxes(title_text="Time", row=2, col=1)
+    fig.update_yaxes(title_text="Acceleration (m/s²)", row=2, col=1)
 
     return fig
 
