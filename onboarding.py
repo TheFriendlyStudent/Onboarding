@@ -57,7 +57,8 @@ app.layout = html.Div([
     dcc.Graph(id="graph"),
 ])
 
-#produce two graphs plotting two inputs over time
+#produce two graphs plotting two inputs: TPS vs Fuel Open Time and Acceleration vs Time, 
+#with a polynomial trendline for the first graph
 #runtime code to update the graph based on dropdown selections
 @app.callback(
     Output("graph", "figure"),
