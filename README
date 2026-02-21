@@ -1,5 +1,5 @@
 This is my submission for the DFR Onboarding project. 
-![An image showing two graphs. The top graph plots TPS ](newplot(4).png)
+![An image showing two graphs. The top graph plots Fuel Open Time against TPS. The bottom graph shows acceleration over time (calculated from roughly taking the derivative of Driven Average Wheel Speed) over time).](newplot(4).png)
 
 The image above was generated using plotly. The data was stored and accessed using pandas.
 
